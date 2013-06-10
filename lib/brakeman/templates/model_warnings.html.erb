@@ -5,6 +5,7 @@
     <th>Model</th>
     <th>Warning Type</th>
     <th>Message</th>
+    <th>Blessing</th>
   </tr>
 <% warnings.each do |warning| %>
   <tr>
@@ -12,6 +13,7 @@
     <td><%= warning['Model']%></td>
     <td><%= warning['Warning Type']%></td>
     <td><%= warning['Message']%></td>
+    <td><%= warning['Blessing']%></td>
   </tr>
 <% end %>
 </table>

@@ -131,3 +131,17 @@ p {
  div.template_name:hover {
    background-color: white;
  }
+
+div.blessing_hash {
+  font-style: italic;
+  cursor: pointer;
+}
+
+div.blessing_hash:hover {
+  background-color: white;
+}
+
+div.blessing_extended {
+  font-style: normal;
+  display: none;
+}

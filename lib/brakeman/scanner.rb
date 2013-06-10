@@ -164,7 +164,9 @@ class Brakeman::Scanner
   #Process a library
   def process_lib path
     begin
-      @processor.process_lib parse_ruby(@app_tree.read_path(path)), path
+      src = @app_tree.read_path(path)
+      Brakeman::Blessings.instance.parse_string_for_blessings src
+      @processor.process_lib parse_ruby(src), path
     rescue Racc::ParseError => e
       tracker.error e, "could not parse #{path}. There is probably a typo in the file. Test it with 'ruby_parse #{path}'"
     rescue Exception => e
@@ -221,7 +223,9 @@ class Brakeman::Scanner
 
   def process_controller path
     begin
-      @processor.process_controller(parse_ruby(@app_tree.read_path(path)), path)
+      src = @app_tree.read_path(path)
+      Brakeman::Blessings.instance.parse_string_for_blessings src
+      @processor.process_controller(parse_ruby(src), path)
     rescue Racc::ParseError => e
       tracker.error e, "could not parse #{path}. There is probably a typo in the file. Test it with 'ruby_parse #{path}'"
     rescue Exception => e
@@ -263,6 +267,7 @@ class Brakeman::Scanner
     type = :erb if type == :rhtml
     name = template_path_to_name path
     text = @app_tree.read_path path
+    Brakeman::Blessings.instance.parse_string_for_blessings text, type
 
     begin
       if type == :erb
@@ -332,7 +337,9 @@ class Brakeman::Scanner
 
   def process_model path
     begin
-      @processor.process_model(parse_ruby(@app_tree.read_path(path)), path)
+      src = @app_tree.read_path(path)
+      Brakeman::Blessings.instance.parse_string_for_blessings src
+      @processor.process_model(parse_ruby(src), path)
     rescue Racc::ParseError => e
       tracker.error e, "could not parse #{path}"
     rescue Exception => e

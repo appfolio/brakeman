@@ -166,6 +166,14 @@ class Brakeman::Checks
 
     check_runner
   end
+  
+  def filter_warnings!
+    [@warnings, @template_warnings, @controller_warnings, @model_warnings].each do |warnings|
+      warnings.reject! do |warning|
+        yield warning
+      end
+    end
+  end
 
   private
 

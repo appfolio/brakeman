@@ -1,6 +1,7 @@
 require 'cgi'
 require 'set'
 require 'brakeman/processors/output_processor'
+require 'brakeman/blessings'
 require 'brakeman/util'
 require 'terminal-table'
 require 'highline/system_extensions'
@@ -128,6 +129,7 @@ class Brakeman::Report
         w["Confidence"] = HTML_CONFIDENCE[w["Confidence"]]
         w["Message"] = with_context warning, w["Message"]
         w["Warning Type"] = with_link warning, w["Warning Type"]
+        w["Blessing"] = toggle_blessing warning
       else
         w["Confidence"] = TEXT_CONFIDENCE[w["Confidence"]]
         w["Message"] = text_message warning, w["Message"]
@@ -165,6 +167,7 @@ class Brakeman::Report
           w["Warning Type"] = with_link warning, w["Warning Type"]
           w["Called From"] = warning.called_from
           w["Template Name"] = warning.template[:name]
+          w["Blessing"] = toggle_blessing warning
         else
           w["Confidence"] = TEXT_CONFIDENCE[w["Confidence"]]
           w["Message"] = text_message warning, w["Message"]
@@ -202,6 +205,7 @@ class Brakeman::Report
           w["Confidence"] = HTML_CONFIDENCE[w["Confidence"]]
           w["Message"] = with_context warning, w["Message"]
           w["Warning Type"] = with_link warning, w["Warning Type"]
+          w["Blessing"] = toggle_blessing warning
         else
           w["Confidence"] = TEXT_CONFIDENCE[w["Confidence"]]
           w["Message"] = text_message warning, w["Message"]
@@ -239,6 +243,7 @@ class Brakeman::Report
           w["Confidence"] = HTML_CONFIDENCE[w["Confidence"]]
           w["Message"] = with_context warning, w["Message"]
           w["Warning Type"] = with_link warning, w["Warning Type"]
+          w["Blessing"] = toggle_blessing warning
         else
           w["Confidence"] = TEXT_CONFIDENCE[w["Confidence"]]
           w["Message"] = text_message warning, w["Message"]
@@ -351,6 +356,7 @@ class Brakeman::Report
 
   #Generate HTML output
   def to_html
+    filter_false_positives
     out = html_header <<
     generate_overview(true) <<
     generate_warning_overview(true).to_s
@@ -379,6 +385,7 @@ class Brakeman::Report
 
   #Output text version of the report
   def to_s
+    filter_false_positives
     out = text_header <<
     "\n\n+SUMMARY+\n\n" <<
     truncate_table(generate_overview.to_s) << "\n\n" <<
@@ -420,6 +427,7 @@ class Brakeman::Report
 
   #Generate CSV output
   def to_csv
+    filter_false_positives
     output = csv_header
     output << "\nSUMMARY\n"
 
@@ -554,6 +562,25 @@ HEADER
     end
 
     message
+  end
+  
+  def toggle_blessing warning
+    hash = Brakeman::Blessings.instance.hash_result(warning)
+    <<-HTML
+      <div class="blessing_hash" onclick="toggle('#{hash}');">
+        #{hash}
+        <div class="blessing_extended" id="#{hash}">
+          You can mark this message as a false positive. To do so, add a full line comment
+           anywhere in the code, containing the string '#{hash}'.
+        </div>
+      </div>
+    HTML
+  end
+
+  def filter_false_positives
+    @checks.filter_warnings! do |warning|
+      Brakeman::Blessings.instance.is_blessed?(warning)
+    end
   end
 
   #Generate HTML for warnings, including context show/hidden via Javascript
